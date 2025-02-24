@@ -2,7 +2,7 @@
 # We show that warm restart and reordered shifts are effective
 include("../src/optimalPoisson.jl")
 
-nvec = 2 .^ (4:9)
+nvec = 2 .^ (4:11)
 T = Float64
 tol = 1e-14
 Xiter = zeros(T, 0, 0)
@@ -65,4 +65,13 @@ end
 
 open("data/weaksingularity_sol.txt", "w") do io
     writedlm(io, X)
+end
+
+errorvec_wr = zeros(maximum(length, errorvec_warm_reverse[4:end]), length(errorvec_warm_reverse)-3)
+for i = 4:length(errorvec_warm_reverse)
+    errorvec_wr[1:length(errorvec_warm_reverse[i]), i-3] = errorvec_warm_reverse[i]
+end
+
+open("data/weaksingularity_wr.txt", "w") do io
+    writedlm(io, errorvec_wr)
 end

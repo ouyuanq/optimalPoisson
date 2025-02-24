@@ -50,6 +50,13 @@ for i in eachindex(p)
 
     # ben = @benchmark gfadi2($(A1), $(B2), $(A2), $(B1), $(UF), $(VF), $(pnow), $(qnow), $(tol), length($(pnow))+1)
     # timevec[i, 2] = minimum(ben).time / 1e9
+end
+
+@printf "ADI \n"
+for i in eachindex(p)
+    @printf "Iteration %i \n" i
+    pnow = p[1:i]
+    qnow = q[1:i]
 
     # ADI method
     Xadi = gadi(X0, A1, B2, A2, B1, F, pnow, qnow, tol, length(pnow)+1, Tm, Tn)

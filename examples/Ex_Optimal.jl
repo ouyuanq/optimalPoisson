@@ -4,8 +4,7 @@ include("../src/optimalPoisson.jl")
 
 # u_xx + u_yy = -100*x*sin(20*pi*x^2*y)*cos(4*pi*(x+y)) with homogeneous Dirichlet boundary conditions
 f = (x, y) -> -100*x*sin(20*pi*x^2*y)*cos(4*pi*(x+y))
-nvec = 2 .^ (5:0.5:7)
-nvec = round.(Int64, nvec)
+nvec = 2 .^ (5:13)
 T = Float64
 tolvec = [1e-3; 1e-6; 1e-13]
 t_ours = zeros(length(nvec), length(tolvec))
@@ -26,6 +25,7 @@ for i in eachindex(nvec)
     Tm, Tn, F_FT, g = poissonFT_init(T, n, n, f, y -> zero(T), y -> zero(T), x -> zero(T), x -> zero(T))
     X0_FT = Zeros(T, n, n)
     p_FT, q_FT = ADIshifts(-4/pi^2, -39/n^4, 39/n^4, 4/pi^2, 1e-13)
+    # @printf "FT iterations: %i \n" length(p_FT)
     X = adi(X0_FT, Tm, Tn, F_FT, p_FT, q_FT)
     X_FT = ultra1mx2cheb(transpose(ultra1mx2cheb(transpose(X))))
 

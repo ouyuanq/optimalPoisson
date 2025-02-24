@@ -89,13 +89,14 @@ function gadi(X0::AbstractMatrix, A1::BandedMatrix, B2::BandedMatrix, A2::Banded
 
             # if the relative error is small than the tolerance or stagnates, we break
             if temp < tolerance || temp > relcauchy
-                # @printf "executed %i and total %i \n" j length(p)
+                # @printf "Iterations executed %i \n" j
                 break
             end
 
             relcauchy = temp
         end
     end
+    # @printf "Total iterations %i \n" length(p)
 
     # convert back to X
     bandedldiv!(A2, X)

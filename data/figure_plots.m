@@ -120,14 +120,14 @@ set(gca, 'FontName', 'Times New Roman', 'FontSize', 12)
 
 loglog(n(end-2:end), (n(end-2:end) / n(end)) .^2 * (A(end, 2) / 2), '--k', 'LineWidth', 1.2, 'HandleVisibility', 'off')
 loglog(n(end-2:end), (n(end-2:end) .^2 .* log(n(end-2:end)) / (n(end)^2 * log(n(end)))) * (A(end, 5) * 1.5), '--k', 'LineWidth', 1.2, 'HandleVisibility', 'off')
-text(4000, 3, '$\mathcal{O}(n^2)$', 'Interpreter', 'latex', 'FontSize', 12)
+text(4000, 2, '$\mathcal{O}(n^2)$', 'Interpreter', 'latex', 'FontSize', 12)
 text(1200, 300, '$\mathcal{O}(n^2 \log n)$', 'Interpreter', 'latex', 'FontSize', 12)
 
 xlim([n(1)/1.1, n(end)*1.1])
 ylim([min(min(A(:, 2:5)))/2, max(max(A(:, 2:5)))*2])
 yticks(10 .^ (-3:2))
 exportgraphics(gcf, 'ex1_time.pdf')
-close
+% close
 %% accuracy
 A = readmatrix("optimal_accuracy.txt");
 n = A(:, 1);
@@ -139,12 +139,12 @@ hold on
 loglog(n, A(:, 3), '-dk', 'LineWidth', 1, 'MarkerSize', 8)
 loglog(n, A(:, 4), '-ok', 'LineWidth', 1, 'MarkerSize', 8)
 xlabel('$n$', 'Interpreter', 'latex', 'FontSize', 12)
-ylabel('$\| X_{new} - X_{FT} \|_{\infty}$', 'Interpreter', 'latex', 'FontSize', 12)
+ylabel('$\| X_{\mathrm{new}} - X_{\mathrm{FT}} \|_{\infty}$', 'Interpreter', 'latex', 'FontSize', 12)
 set(gca, 'FontName', 'Times New Roman', 'FontSize', 12)
 
 
 xlim([n(1)/1.1, n(end)*1.1])
-ylim([min(min(A(:, 6:8)))/10, max(max(A(:, 6:8)))*2])
+ylim([min(min(A(:, 2:4)))/10, max(max(A(:, 2:4)))*2])
 
 exportgraphics(gcf, 'ex1_accuracy.pdf')
 
@@ -161,9 +161,9 @@ loglog(n, A(:, 4), '-dk', 'LineWidth', 1, 'MarkerSize', 8)
 loglog(n, A(:, 5), '-*k', 'LineWidth', 1, 'MarkerSize', 8)
 
 legend('new, $\epsilon=10^{-14}$', 'new, $\epsilon=10^{-3}$', ...
-    'new, B-S', 'TO, B-S', 'Interpreter', 'latex', 'Location', 'northwest', 'FontSize', 12)
+    'new, B--S', 'TO, B--S', 'Interpreter', 'latex', 'Location', 'northwest', 'FontSize', 12)
 % legend('new, $\epsilon=10^{-14}$', ...
-%     'new, B-S', 'TO, B-S', 'Interpreter', 'latex', 'Location', 'northwest', 'FontSize', 12)
+%     'new, B--S', 'TO, B--S', 'Interpreter', 'latex', 'Location', 'northwest', 'FontSize', 12)
 xlabel('$n$', 'Interpreter', 'latex', 'FontSize', 12)
 ylabel('Execution time (s)', 'Interpreter', 'latex', 'FontSize', 12)
 set(gca, 'FontName', 'Times New Roman', 'FontSize', 12)
@@ -191,7 +191,7 @@ loglog(n, A(:, 4), '-dk', 'LineWidth', 1, 'MarkerSize', 8)
 loglog(n, A(:, 5), '-*k', 'LineWidth', 1, 'MarkerSize', 8)
 
 xlabel('$n$', 'Interpreter', 'latex', 'FontSize', 12)
-ylabel('$\| X - X_{true} \|_{F} / \|X_{true} \|_{F}$', 'Interpreter', 'latex', 'FontSize', 12)
+ylabel('$\| X - X_{\mathrm{true}} \|_{F} / \|X_{\mathrm{true}} \|_{F}$', 'Interpreter', 'latex', 'FontSize', 12)
 set(gca, 'FontName', 'Times New Roman', 'FontSize', 12)
 
 
@@ -205,7 +205,7 @@ A = readmatrix("weaksingularity.txt");
 n = 1:size(A, 1);
 
 figure
-set(gcf, 'Position', [200 200 700 350])
+set(gcf, 'Position', [200 200 600 350])
 semilogy(n, A(:, 1), '-ok', 'LineWidth', 1, 'MarkerSize', 8)
 hold on
 semilogy(n, A(:, 2), '-sk', 'LineWidth', 1, 'MarkerSize', 8)
@@ -213,8 +213,8 @@ semilogy(n, A(:, 3), '-dk', 'LineWidth', 1, 'MarkerSize', 8)
 semilogy(n, A(:, 4), '-*k', 'LineWidth', 1, 'MarkerSize', 8)
 semilogy(-1:56, 1e-14 * ones(58, 1), '--k', 'LineWidth', 1, 'HandleVisibility', 'off')
 
-legend('zero, increasing', 'zero, decreasing', 'warm, increasing', ...
-    'warm, decreasing', 'Interpreter', 'latex', 'Position', [0.14 0.14 0.47 0.12], 'FontSize', 12, ...
+legend('zero, ascending', 'zero, descending', 'warm, ascending', ...
+    'warm, descending', 'Interpreter', 'latex', 'Position', [0.18    0.14 0.47 0.12], 'FontSize', 12, ...
     'NumColumns',2)
 xlabel('$j$', 'Interpreter', 'latex', 'FontSize', 12)
 ylabel('$\| X_{j} - X_{j-1} \|_{F} / \|X_{j} \|_{F}$', 'Interpreter', 'latex', 'FontSize', 12)
@@ -225,23 +225,48 @@ ylim([1e-20, 2])
 
 exportgraphics(gcf, 'ex3_relerr.pdf')
 
-%% solution
+%% warm restart and descending order
+
+A = readmatrix("weaksingularity_wr.txt");
+n = 1:size(A, 1);
+
 figure
-set(gcf, 'Position', [200 200 450 350])
-X = readmatrix("weaksingularity_sol.txt");
-valX = chebfun2.coeffs2vals(X);
-x = chebfun2.chebpts2(size(X, 1), size(X, 2));
+set(gcf, 'Position', [200 200 600 350])
+semilogy(n, A(:, 1), '-ok', 'LineWidth', 1, 'MarkerSize', 8)
+hold on
+semilogy(n, A(:, 2), '-sk', 'LineWidth', 1, 'MarkerSize', 8)
+semilogy(n, A(:, 3), '-dk', 'LineWidth', 1, 'MarkerSize', 8)
+semilogy(n, A(:, 4), '-*k', 'LineWidth', 1, 'MarkerSize', 8)
+semilogy(-1:88, 1e-14 * ones(90, 1), '--k', 'LineWidth', 1, 'HandleVisibility', 'off')
 
-
-surf(x, transpose(x), valX, 'EdgeColor','none')
+legend('$n=128$', '$n=256$', '$n=512$', '$n=1024$', 'Interpreter', 'latex', 'Location', 'northeast', 'FontSize', 12, ...
+    'NumColumns',2)
+xlabel('$j$', 'Interpreter', 'latex', 'FontSize', 12)
+ylabel('$\| X_{j} - X_{j-1} \|_{F} / \|X_{j} \|_{F}$', 'Interpreter', 'latex', 'FontSize', 12)
 set(gca, 'FontName', 'Times New Roman', 'FontSize', 12)
-view(2)
-pbaspect([1 1 1])
-cmp = colormap('hot');
-colormap(flipud(cmp(1:200, :)));
-colorbar('FontName', 'Times New Roman', 'FontSize', 10)
 
-exportgraphics(gcf, 'ex3_sol.pdf', 'Resolution', 400)
+xlim([0, n(end)+1])
+ylim([1e-17, 1e-5])
+
+exportgraphics(gcf, 'ex3_wr.pdf')
+
+% %% solution
+% figure
+% set(gcf, 'Position', [200 200 450 350])
+% X = readmatrix("weaksingularity_sol.txt");
+% valX = chebfun2.coeffs2vals(X);
+% x = chebfun2.chebpts2(size(X, 1), size(X, 2));
+% 
+% 
+% surf(x, transpose(x), valX, 'EdgeColor','none')
+% set(gca, 'FontName', 'Times New Roman', 'FontSize', 12)
+% view(2)
+% pbaspect([1 1 1])
+% cmp = colormap('hot');
+% colormap(flipud(cmp(1:200, :)));
+% colorbar('FontName', 'Times New Roman', 'FontSize', 10)
+% 
+% exportgraphics(gcf, 'ex3_sol.pdf', 'Resolution', 400)
 
 %% fADI
 

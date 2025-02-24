@@ -1,6 +1,5 @@
 # optimal complexity Poisson solver for spectral method
 using LinearAlgebra, FFTW, BandedMatrices, SemiseparableMatrices, MatrixEquations, FillArrays, ArrayLayouts, BenchmarkTools, Printf, DelimitedFiles, Plots
-BLAS.set_num_threads(1)
 
 include("Operators.jl")
 include("Chebyshev.jl")

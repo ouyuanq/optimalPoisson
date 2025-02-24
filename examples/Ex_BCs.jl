@@ -64,7 +64,7 @@ for i in eachindex(nvec)
 end
 
 # B-S algorithm
-for i = 1:8
+for i in eachindex(nvec)
     @printf "No.%d iteration \n" i
     n = nvec[i]
 
@@ -93,7 +93,7 @@ for i = 1:8
 end
 
 # Townsend & Olver algorithm (need to annotate the warning from LAPACK routine trsyl!)
-for i = 1:8
+for i in eachindex(nvec)
     @printf "No.%d iteration \n" i
     n = nvec[i]
 
