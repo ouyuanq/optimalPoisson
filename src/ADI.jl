@@ -29,6 +29,7 @@ function gadi(X0::AbstractMatrix, A1::BandedMatrix, B2::BandedMatrix, A2::Banded
     Xold = similar(X)
     T1XT2 = Matrix{eltype(X0)}(undef, size(T1, 1), size(T2, 1))
 
+    iter = length(p)
     for j in eachindex(p)
         # record the old iteration for checking
         if iszero(mod(j, tau))
@@ -90,6 +91,7 @@ function gadi(X0::AbstractMatrix, A1::BandedMatrix, B2::BandedMatrix, A2::Banded
             # if the relative error is small than the tolerance or stagnates, we break
             if temp < tolerance || temp > relcauchy
                 # @printf "Iterations executed %i \n" j
+                iter = j
                 break
             end
 
@@ -101,7 +103,7 @@ function gadi(X0::AbstractMatrix, A1::BandedMatrix, B2::BandedMatrix, A2::Banded
     # convert back to X
     bandedldiv!(A2, X)
 
-    X
+    X, iter
 end
 
 # generalized ADI with relative incremental and true error during iterations

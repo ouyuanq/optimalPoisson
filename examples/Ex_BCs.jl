@@ -31,7 +31,7 @@ for i in eachindex(nvec)
     # solution
     begin
         # high resolution
-        X_ours = gadi(X0_ours, A1, B2, A2, B1, F_ours, p_ours, q_ours, tol, 10, T1, T2)
+        X_ours, _ = gadi(X0_ours, A1, B2, A2, B1, F_ours, p_ours, q_ours, tol, 10, T1, T2)
         X_ours = bandedlrmul!(Matrix{T}(undef, n, n), T1, X_ours, T2)
         axpy!(true, g, X_ours)
     
@@ -41,7 +41,7 @@ for i in eachindex(nvec)
         # diffvec_2[i, 1] = opnorm(X_ours) / opnorm(exact)
 
         # low resolution
-        X_ours = gadi(X0_ours, A1, B2, A2, B1, F_ours, p_ours, q_ours, 1e-4, 10, T1, T2)
+        X_ours, _ = gadi(X0_ours, A1, B2, A2, B1, F_ours, p_ours, q_ours, 1e-4, 10, T1, T2)
         X_ours = bandedlrmul!(Matrix{T}(undef, n, n), T1, X_ours, T2)
         axpy!(true, g, X_ours)
     

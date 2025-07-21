@@ -59,7 +59,7 @@ for i in eachindex(p)
     qnow = q[1:i]
 
     # ADI method
-    Xadi = gadi(X0, A1, B2, A2, B1, F, pnow, qnow, tol, length(pnow)+1, Tm, Tn)
+    Xadi, _ = gadi(X0, A1, B2, A2, B1, F, pnow, qnow, tol, length(pnow)+1, Tm, Tn)
     Xadi = Tm * Xadi * transpose(Tn)
     axpy!(true, g, Xadi)
     accuracy[i, 3] = norm(Xadi - exact_coeffs) / norm(exact_coeffs)

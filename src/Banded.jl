@@ -37,7 +37,6 @@ function bandedlmul!(A::BandedMatrix, B::AbstractVecOrMat)
     B
 end
 
-# left and right multiplication of lowertriangular banded matrix
 function bandedlrmul!(C::AbstractMatrix, A1::BandedMatrix, B::AbstractMatrix, A2::BandedMatrix)
     # compute C = A1 * B * transpose(A2)
     @assert size(A1, 2) == size(B, 1) && size(A2, 2) == size(B, 2) "Unmatched dimension of B"
@@ -45,8 +44,17 @@ function bandedlrmul!(C::AbstractMatrix, A1::BandedMatrix, B::AbstractMatrix, A2
     @assert A1.l * A1.u <= 0 && A2.l * A2.u <= 0 "Nontriangular banded matrix"
     @assert size(C, 1) >= size(B, 1) && size(C, 2) >= size(B, 2) "C should be larger than B"
 
-    temp = zero(promote_type(eltype(C), eltype(B)))
+    # C = B * transpose(A2)
+    szB1 = size(B, 1)
+    @inbounds for j in axes(C, 2)
+        Cj = view(C, 1:szB1, j) .= 0
+        for k in rowrange(A2, j)
+            axpy!(BandedMatrices.inbands_getindex(A2, j, k), view(B, :, k), Cj)
+        end
+    end
 
+    # C = A1 * C
+    temp = zero(promote_type(eltype(C), eltype(B)))
     # A1 * B
     if A1.l <= 0
         # uppertriangular
@@ -54,7 +62,7 @@ function bandedlrmul!(C::AbstractMatrix, A1::BandedMatrix, B::AbstractMatrix, A2
             for i in axes(A1, 1)
                 temp = 0
                 for j in rowrange(A1, i)
-                    temp += BandedMatrices.inbands_getindex(A1, i, j) * B[j, k]
+                    temp += BandedMatrices.inbands_getindex(A1, i, j) * C[j, k]
                 end
                 C[i, k] = temp
             end
@@ -65,40 +73,78 @@ function bandedlrmul!(C::AbstractMatrix, A1::BandedMatrix, B::AbstractMatrix, A2
             for i in reverse(axes(A1, 1))
                 temp = 0
                 for j in rowrange(A1, i)
-                    temp += BandedMatrices.inbands_getindex(A1, i, j) * B[j, k]
+                    temp += BandedMatrices.inbands_getindex(A1, i, j) * C[j, k]
                 end
                 C[i, k] = temp
             end
         end
     end
 
-    # A2 * transpose(C)
-    if A2.l <= 0
-        # uppertriangular
-        @inbounds for k in axes(C, 1)
-            for i in axes(A2, 1)
-                temp = 0
-                for j in rowrange(A2, i)
-                    temp += BandedMatrices.inbands_getindex(A2, i, j) * C[k, j]
-                end
-                C[k, i] = temp
-            end
-        end
-    elseif A2.u <= 0
-        # lowertriangular
-        @inbounds for k in axes(C, 1)
-            for i in reverse(axes(A2, 1))
-                temp = 0
-                for j in rowrange(A2, i)
-                    temp += BandedMatrices.inbands_getindex(A2, i, j) * C[k, j]
-                end
-                C[k, i] = temp
-            end
-        end
-    end
-
     C
 end
+
+# # left and right multiplication of lowertriangular banded matrix
+# function bandedlrmul!(C::AbstractMatrix, A1::BandedMatrix, B::AbstractMatrix, A2::BandedMatrix)
+#     # compute C = A1 * B * transpose(A2)
+#     @assert size(A1, 2) == size(B, 1) && size(A2, 2) == size(B, 2) "Unmatched dimension of B"
+#     @assert size(A1, 1) == size(C, 1) && size(A2, 1) == size(C, 2) "Unmatched dimension of C"
+#     @assert A1.l * A1.u <= 0 && A2.l * A2.u <= 0 "Nontriangular banded matrix"
+#     @assert size(C, 1) >= size(B, 1) && size(C, 2) >= size(B, 2) "C should be larger than B"
+
+#     temp = zero(promote_type(eltype(C), eltype(B)))
+
+#     # A1 * B
+#     if A1.l <= 0
+#         # uppertriangular
+#         @inbounds for k in axes(B, 2)
+#             for i in axes(A1, 1)
+#                 temp = 0
+#                 for j in rowrange(A1, i)
+#                     temp += BandedMatrices.inbands_getindex(A1, i, j) * B[j, k]
+#                 end
+#                 C[i, k] = temp
+#             end
+#         end
+#     elseif A1.u <= 0
+#         # lowertriangular
+#         @inbounds for k in axes(B, 2)
+#             for i in reverse(axes(A1, 1))
+#                 temp = 0
+#                 for j in rowrange(A1, i)
+#                     temp += BandedMatrices.inbands_getindex(A1, i, j) * B[j, k]
+#                 end
+#                 C[i, k] = temp
+#             end
+#         end
+#     end
+
+#     # A2 * transpose(C)
+#     if A2.l <= 0
+#         # uppertriangular
+#         @inbounds for k in axes(C, 1)
+#             for i in axes(A2, 1)
+#                 temp = 0
+#                 for j in rowrange(A2, i)
+#                     temp += BandedMatrices.inbands_getindex(A2, i, j) * C[k, j]
+#                 end
+#                 C[k, i] = temp
+#             end
+#         end
+#     elseif A2.u <= 0
+#         # lowertriangular
+#         @inbounds for k in axes(C, 1)
+#             for i in reverse(axes(A2, 1))
+#                 temp = 0
+#                 for j in rowrange(A2, i)
+#                     temp += BandedMatrices.inbands_getindex(A2, i, j) * C[k, j]
+#                 end
+#                 C[k, i] = temp
+#             end
+#         end
+#     end
+
+#     C
+# end
 
 # left division of a triangular banded matrix
 function bandedldiv!(A::BandedMatrix, B::AbstractVecOrMat)

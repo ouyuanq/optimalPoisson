@@ -67,35 +67,60 @@ end
 
 figure
 set(gcf, 'Position', [200 200 600 350])
-loglog(nvec, maxeig .\ upperbound2, '-ok', 'LineWidth', 1, 'MarkerSize', 6, 'MarkerFaceColor', 'w')
+loglog(nvec, maxeig .\ upperbound2, '--ok', 'LineWidth', 1, 'MarkerSize', 6, 'MarkerFaceColor', 'w')
 hold on
-loglog(nvec, mineig .\ lowerbound2 , '-sk', 'LineWidth', 1, 'MarkerSize', 6, 'MarkerFaceColor', 'w')
+loglog(nvec, mineig .\ lowerbound2 , '--sk', 'LineWidth', 1, 'MarkerSize', 6, 'MarkerFaceColor', 'w')
 % loglog(nvec, upperbound2, '-k', 'LineWidth', 1)
 % loglog(nvec, lowerbound2, '--k', 'LineWidth', 1)
 xlim([nvec(1)/1.2 nvec(end)*1.2])
 ylim([0.95 1.15])
 xlabel('$n$', 'Interpreter', 'latex', 'FontSize', 14)
-ylabel('$|\lambda^b| / |\lambda|$', 'Interpreter', 'latex', 'FontSize', 14)
+% ylabel('$|\lambda^b| / |\lambda|$', 'Interpreter', 'latex', 'FontSize', 14)
 set(gca, 'FontName', 'Times')
 % legend('maximum', 'minimum', 'upper bound', 'lower bound', 'Location', 'northwest', 'FontSize', 12)
-legend('minimum', 'maxmum', 'Location', 'southeast', 'FontSize', 12)
+legend('$|\lambda^b_{\min}| / |\lambda_{\min}|$', '$|\lambda^b_{\max}| / |\lambda_{\max}|$', 'Interpreter', 'latex', 'Location', 'southeast', 'FontSize', 12)
 exportgraphics(gcf, 'spectral_estimation.pdf')
 
+%%
+figure
+set(gcf, 'Position', [200 200 600 350])
+nnow = 50;
+D = ultraS.diffmat(nnow+2, 2);  % differential operator
+S = ultraS.convertmat(nnow+2, 0, 1);  % conversion operator
+R = spdiags([-ones(nnow+2, 1) ones(nnow+2, 1)], [-2; 0], nnow+2, nnow);  % transformation operator
+
+A = D*R; B = S*R;
+K = full(B(1:nnow, 1:nnow)) \ full(A(1:nnow, 1:nnow));
+
+eK = sort(eig(-K));
+semilogy(eK, 'ok', 'MarkerFaceColor', 'k', 'MarkerSize', 3)
+hold on
+semilogy(pi^2/4 * (1:nnow).^2 , '-k', 'LineWidth', 1.2)
+xlim([1 nnow])
+xlabel('$n$', 'Interpreter', 'latex', 'FontSize', 14)
+ylabel('$|\lambda|$', 'Interpreter', 'latex', 'FontSize', 14)
+legend('US approximation', 'true', 'Location', 'northwest', 'FontSize', 12)
+exportgraphics(gcf, 'eigdiff.png')
+
 %% relative true error and increment error
-A = readmatrix("TwoErrors.txt");
+
+A = readmatrix("ADI_Errors.txt");
 
 figure
 set(gcf, 'Position', [200 200 600 350])
+n = A(1, :);
 
-semilogy(A(:, 2), '-ok', 'LineWidth', 0.8, 'MarkerSize', 6)
+semilogy(A(2:n(1)+1, 1), '-o', 'LineWidth', 0.8, 'MarkerSize', 6)
 hold on
-semilogy(A(:, 1), '-*k', 'LineWidth', 0.8, 'MarkerSize', 6)
-legend('$\|X_j - X\|_F / \| X \|_F$', '$\|X_j - X_{j-1}\|_F / \| X_j \|_F$', 'Interpreter', 'latex', ...
+semilogy(A(2:n(2)+1, 2), '-s', 'LineWidth', 0.8, 'MarkerSize', 6)
+semilogy(A(2:n(3)+1, 3), '-d', 'LineWidth', 0.8, 'MarkerSize', 6)
+semilogy(A(2:n(4)+1, 4), '-*', 'LineWidth', 0.8, 'MarkerSize', 6)
+legend('$n = 256$', '$n = 512$', '$n = 1024$', '$n = 2048$', 'Interpreter', 'latex', ...
     'Location', 'northeast', 'FontSize', 12)
 xlabel('$j$', 'Interpreter', 'latex', 'FontSize', 14)
 xlim([0 size(A, 1)+1])
-ylabel('Relative error', 'Interpreter', 'latex', 'FontSize', 12)
-ylim([min(min(A))/2, max(max(A))*2])
+ylabel('$\|X_j - X\|_F / \| X \|_F$', 'Interpreter', 'latex', 'FontSize', 12)
+ylim([1e-16 1e0])
 set(gca, 'FontName', 'Times')
 exportgraphics(gcf, 'adi_convergence.pdf')
 
@@ -106,27 +131,31 @@ n = A(:, 1);
 figure
 set(gcf, 'Position', [200 200 600 350])
 
-loglog(n, A(:, 2), '-sk', 'LineWidth', 1, 'MarkerSize', 8)
+loglog(n, A(:, 2), '-o', 'Color', "#0072BD", 'LineWidth', 1, 'MarkerSize', 8)
 hold on
-loglog(n, A(:, 3), '-dk', 'LineWidth', 1, 'MarkerSize', 8)
-loglog(n, A(:, 4), '-ok', 'LineWidth', 1, 'MarkerSize', 8)
-loglog(n, A(:, 5), '-*k', 'LineWidth', 1, 'MarkerSize', 8)
+loglog(n, A(:, 3), '-o', 'Color', "#D95319", 'LineWidth', 1, 'MarkerSize', 8)
+loglog(n, A(:, 4), '-o', 'Color', "#77AC30", 'LineWidth', 1, 'MarkerSize', 8)
+loglog(n, A(:, 5), '-*', 'Color', "#EDB120", 'LineWidth', 1, 'MarkerSize', 8)
+loglog(n, A(:, 6), '-*', 'Color', "#7E2F8E", 'LineWidth', 1, 'MarkerSize', 8)
+loglog(n, A(:, 7), '-*', 'Color', "#A2142F", 'LineWidth', 1, 'MarkerSize', 8)
 
 legend('new, $\epsilon=10^{-3}$', 'new, $\epsilon=10^{-6}$', 'new, $\epsilon=10^{-13}$', ...
-    'FT, $\epsilon = 10^{-13}$', 'Interpreter', 'latex', 'Location', 'northwest', 'FontSize', 12)
+    'FT, $\epsilon = 10^{-3}$', 'FT, $\epsilon = 10^{-6}$', 'FT, $\epsilon = 10^{-13}$', ...
+    'Interpreter', 'latex', 'Location', 'northwest', 'FontSize', 12)
 xlabel('$n$', 'Interpreter', 'latex', 'FontSize', 12)
-ylabel('Execution time (s)', 'Interpreter', 'latex', 'FontSize', 12)
+ylabel('Execution time (sec)', 'Interpreter', 'latex', 'FontSize', 12)
 set(gca, 'FontName', 'Times New Roman', 'FontSize', 12)
 
-loglog(n(end-2:end), (n(end-2:end) / n(end)) .^2 * (A(end, 2) / 2), '--k', 'LineWidth', 1.2, 'HandleVisibility', 'off')
-loglog(n(end-2:end), (n(end-2:end) .^2 .* log(n(end-2:end)) / (n(end)^2 * log(n(end)))) * (A(end, 5) * 1.5), '--k', 'LineWidth', 1.2, 'HandleVisibility', 'off')
-text(4000, 2, '$\mathcal{O}(n^2)$', 'Interpreter', 'latex', 'FontSize', 12)
-text(1200, 300, '$\mathcal{O}(n^2 \log n)$', 'Interpreter', 'latex', 'FontSize', 12)
+loglog(n(end-5:end-2), (n(end-5:end-2) / n(end-2)) .^2 * (A(end-2, 2) / 1.5), '--k', 'LineWidth', 1.2, 'HandleVisibility', 'off')
+loglog(n(end-5:end-2), (n(end-5:end-2) .^2 .* log(n(end-5:end-2)) / (n(end-2)^2 * log(n(end-2)))) * (A(end-2, 7) * 1.5), '--k', 'LineWidth', 1.2, 'HandleVisibility', 'off')
+text(1200, 2e-1, '$\mathcal{O}(n^2)$', 'Interpreter', 'latex', 'FontSize', 12)
+text(600, 40, '$\mathcal{O}(n^2 \log n)$', 'Interpreter', 'latex', 'FontSize', 12)
 
 xlim([n(1)/1.1, n(end)*1.1])
-ylim([min(min(A(:, 2:5)))/2, max(max(A(:, 2:5)))*2])
+ylim([min(min(A(:, 2:7)))/2, max(max(A(:, 2:7)))*2])
 yticks(10 .^ (-3:2))
 exportgraphics(gcf, 'ex1_time.pdf')
+% exportgraphics(gcf, 'ex1_time.png', 'Resolution', 300)
 % close
 %% accuracy
 A = readmatrix("optimal_accuracy.txt");
@@ -134,19 +163,79 @@ n = A(:, 1);
 figure
 set(gcf, 'Position', [200 200 600 350])
 
-loglog(n, A(:, 2), '-sk', 'LineWidth', 1, 'MarkerSize', 8)
+loglog(n, A(:, 2), '-o', 'Color', "#0072BD", 'LineWidth', 1, 'MarkerSize', 8)
 hold on
-loglog(n, A(:, 3), '-dk', 'LineWidth', 1, 'MarkerSize', 8)
-loglog(n, A(:, 4), '-ok', 'LineWidth', 1, 'MarkerSize', 8)
+loglog(n, A(:, 3), '-o', 'Color', "#D95319", 'LineWidth', 1, 'MarkerSize', 8)
+loglog(n, A(:, 4), '-o', 'Color', "#77AC30", 'LineWidth', 1, 'MarkerSize', 8)
 xlabel('$n$', 'Interpreter', 'latex', 'FontSize', 12)
-ylabel('$\| X_{\mathrm{new}} - X_{\mathrm{FT}} \|_{\infty}$', 'Interpreter', 'latex', 'FontSize', 12)
+ylabel('$\| X_{\mathrm{new}} - X_{\mathrm{FT}} \|_{\infty} / \| X_{\mathrm{FT}} \|_{\infty}$', 'Interpreter', 'latex', 'FontSize', 12)
 set(gca, 'FontName', 'Times New Roman', 'FontSize', 12)
+
+legend('$\epsilon=10^{-3}$', '$\epsilon=10^{-6}$', '$\epsilon=10^{-13}$', ...
+    'Interpreter', 'latex', 'Position', [0.69,0.32,0.2,0.18], 'FontSize', 12)
+
+xlim([n(1)/1.1, n(end)*1.1])
+ylim([1e-15 1e-1])
+
+exportgraphics(gcf, 'ex1_accuracy.pdf')
+% exportgraphics(gcf, 'ex1_accuracy.png', 'Resolution', 300)
+
+%% iterations
+A = readmatrix("optimal_iter.txt");
+n = A(:, 1);
+figure
+set(gcf, 'Position', [200 200 600 350])
+
+semilogx(n, A(:, 2), '-o', 'Color', "#0072BD", 'LineWidth', 1, 'MarkerSize', 8)
+hold on
+semilogx(n, A(:, 3), '-o', 'Color', "#D95319", 'LineWidth', 1, 'MarkerSize', 8)
+semilogx(n, A(:, 4), '-o', 'Color', "#77AC30", 'LineWidth', 1, 'MarkerSize', 8)
+semilogx(n, A(:, 5), '-*', 'Color', "#EDB120", 'LineWidth', 1, 'MarkerSize', 8)
+semilogx(n, A(:, 6), '-*', 'Color', "#7E2F8E", 'LineWidth', 1, 'MarkerSize', 8)
+semilogx(n, A(:, 7), '-*', 'Color', "#A2142F", 'LineWidth', 1, 'MarkerSize', 8)
+xlabel('$n$', 'Interpreter', 'latex', 'FontSize', 12)
+ylabel('ADI iterations', 'Interpreter', 'latex', 'FontSize', 12)
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 12)
+
+% legend('new, $\epsilon=10^{-3}$', 'new, $\epsilon=10^{-6}$', 'new, $\epsilon=10^{-13}$', ...
+%     'FT, $\epsilon = 10^{-3}$', 'FT, $\epsilon = 10^{-6}$', 'FT, $\epsilon = 10^{-13}$', ...
+%     'Interpreter', 'latex', 'Position', [0.145,0.56,0.25,0.35], 'FontSize', 12)
+
+semilogx(n(end-4:end), log(n(end-4:end)) / log(n(end)) * (A(end, 7) + 1.5), '--k', 'LineWidth', 1.2, 'HandleVisibility', 'off')
+text(1500, 100, '$\mathcal{O}(\log n)$', 'Interpreter', 'latex', 'FontSize', 12)
+
+xlim([n(1)/1.1, n(end)*1.1])
+ylim([0 110])
+
+exportgraphics(gcf, 'ex1_iter.pdf')
+
+%% conversions
+A = readmatrix("trans_time.txt");
+n = A(:, 1);
+figure
+set(gcf, 'Position', [200 200 600 350])
+
+loglog(n, A(:, 3), '-o', 'Color', "#0072BD", 'LineWidth', 1, 'MarkerSize', 8)
+hold on
+loglog(n, A(:, 5), '-*', 'Color', "#EDB120", 'LineWidth', 1, 'MarkerSize', 8)
+loglog(n, A(:, 6), '-*', 'Color', "#7E2F8E", 'LineWidth', 1, 'MarkerSize', 8)
+xlabel('$n$', 'Interpreter', 'latex', 'FontSize', 12)
+ylabel('Trasformation time (sec)', 'Interpreter', 'latex', 'FontSize', 12)
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 12)
+
+legend('new (matmul)', 'FT (matmul)', 'FT (direct)', ...
+    'Interpreter', 'latex', 'Location', 'northwest', 'FontSize', 12)
+
+loglog(n(end-4:end), (n(end-4:end) / n(end)) .^2 * (A(end, 3) / 1.5), '--k', 'LineWidth', 1.2, 'HandleVisibility', 'off')
+loglog(n(end-4:end), (n(end-4:end) .^3 / n(end)^3) * (A(end, 5) / 1.5), '--k', 'LineWidth', 1.2, 'HandleVisibility', 'off')
+text(4000, 3e-2, '$\mathcal{O}(n^2)$', 'Interpreter', 'latex', 'FontSize', 12)
+text(4000, 2, '$\mathcal{O}(n^3)$', 'Interpreter', 'latex', 'FontSize', 12)
 
 
 xlim([n(1)/1.1, n(end)*1.1])
-ylim([min(min(A(:, 2:4)))/10, max(max(A(:, 2:4)))*2])
+ylim([1e-6 1.2e2])
 
-exportgraphics(gcf, 'ex1_accuracy.pdf')
+exportgraphics(gcf, 'ex1_trans.pdf')
 
 %% adaptivity to BCs
 A = readmatrix("BCs_time.txt");
@@ -165,7 +254,7 @@ legend('new, $\epsilon=10^{-14}$', 'new, $\epsilon=10^{-3}$', ...
 % legend('new, $\epsilon=10^{-14}$', ...
 %     'new, B--S', 'TO, B--S', 'Interpreter', 'latex', 'Location', 'northwest', 'FontSize', 12)
 xlabel('$n$', 'Interpreter', 'latex', 'FontSize', 12)
-ylabel('Execution time (s)', 'Interpreter', 'latex', 'FontSize', 12)
+ylabel('Execution time (sec)', 'Interpreter', 'latex', 'FontSize', 12)
 set(gca, 'FontName', 'Times New Roman', 'FontSize', 12)
 
 loglog(n(6:end-1), (n(6:end-1) / n(end-1)) .^3 * (A(end-1, 5) * 1.5), '--k', 'LineWidth', 1.2, 'HandleVisibility', 'off')
@@ -176,7 +265,8 @@ text(1600, 500, '$\mathcal{O}(n^3)$', 'Interpreter', 'latex', 'FontSize', 12)
 xlim([n(1)/1.1, n(end)*1.1])
 ylim([1e-4, max(max(A(:, 2:5)))*2])
 
-exportgraphics(gcf, 'ex2_time.pdf')
+% exportgraphics(gcf, 'ex2_time.pdf')
+exportgraphics(gcf, 'ex2_time.png', 'Resolution', 300)
 
 %% accuracy
 A = readmatrix("BCs_accuracy.txt");
@@ -198,7 +288,8 @@ set(gca, 'FontName', 'Times New Roman', 'FontSize', 12)
 xlim([n(1)/1.1, n(end)*1.1])
 ylim([5e-16, 1e-3])
 
-exportgraphics(gcf, 'ex2_accuracy.pdf')
+% exportgraphics(gcf, 'ex2_accuracy.pdf')
+exportgraphics(gcf, 'ex2_accuracy.png', 'Resolution', 300)
 
 %% weak singularity
 A = readmatrix("weaksingularity.txt");
@@ -223,7 +314,8 @@ set(gca, 'FontName', 'Times New Roman', 'FontSize', 12)
 xlim([0, n(end)+1])
 ylim([1e-20, 2])
 
-exportgraphics(gcf, 'ex3_relerr.pdf')
+% exportgraphics(gcf, 'ex3_relerr.pdf')
+exportgraphics(gcf, 'ex3_relerr.png', 'Resolution', 300)
 
 %% warm restart and descending order
 
@@ -248,7 +340,8 @@ set(gca, 'FontName', 'Times New Roman', 'FontSize', 12)
 xlim([0, n(end)+1])
 ylim([1e-17, 1e-5])
 
-exportgraphics(gcf, 'ex3_wr.pdf')
+% exportgraphics(gcf, 'ex3_wr.pdf')
+exportgraphics(gcf, 'ex3_wr.png', 'Resolution', 300)
 
 % %% solution
 % figure
@@ -281,10 +374,11 @@ loglog(n, A(:, 4), '--k', 'LineWidth', 1)
 
 legend('fADI', 'ADI', 'Interpreter', 'latex', 'Location', 'northwest', 'FontSize', 12)
 xlabel('Iterations', 'Interpreter', 'latex', 'FontSize', 12)
-ylabel('Execution time (s)', 'Interpreter', 'latex', 'FontSize', 12)
+ylabel('Execution time (sec)', 'Interpreter', 'latex', 'FontSize', 12)
 set(gca, 'FontName', 'Times New Roman', 'FontSize', 12)
 
-exportgraphics(gcf, 'fadi_time.pdf')
+% exportgraphics(gcf, 'fadi_time.pdf')
+exportgraphics(gcf, 'fadi_time.png', 'Resolution', 300)
 
 figure
 set(gcf, 'Position', [200 200 600 350])
@@ -297,4 +391,50 @@ xlabel('$j$', 'Interpreter', 'latex', 'FontSize', 12)
 ylabel('$\| X_j - X \|_{F} / \|X \|_{F}$', 'Interpreter', 'latex', 'FontSize', 12)
 set(gca, 'FontName', 'Times New Roman', 'FontSize', 12)
 
-exportgraphics(gcf, 'fadi_accuracy.pdf')
+% exportgraphics(gcf, 'fadi_accuracy.pdf')
+exportgraphics(gcf, 'fadi_accuracy.png', 'Resolution', 300)
+
+%% transformation cost
+
+A_chebfun = readmatrix("ex_poisson.txt");
+A_julia = readmatrix("trans_time.txt");
+n = A_chebfun(:, 1);
+
+figure
+set(gcf, 'Position', [200 200 600 350])
+loglog(n, A_chebfun(:, 4), '-o', 'LineWidth', 1.5)
+hold on
+loglog(n, A_chebfun(:, 5), '-o', 'LineWidth', 1.5)
+loglog(n, A_julia(:, 5), '-o', 'LineWidth', 1.5)
+loglog(n, A_julia(:, 6), '-o', 'LineWidth', 1.5)
+loglog(n, A_julia(:, 3), '-o', 'LineWidth', 1.5)
+
+legend('Chebfun (matmul)', 'Chebfun (fast)', 'FT (matmul)', 'FT (fast)', 'new (matmul)', 'Interpreter', 'latex', 'Location', 'northwest', 'FontSize', 12)
+xlabel('$n$', 'Interpreter', 'latex', 'FontSize', 14)
+ylabel('Transformation time (sec)', 'Interpreter', 'latex', 'FontSize', 12)
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 12)
+xlim([n(1) / 1.2, n(end) * 1.2])
+
+loglog(n(end-3:end), (n(end-3:end) / n(end)) .^2 * (A_julia(end, 3) / 1.5), '--k', 'LineWidth', 1.2, 'HandleVisibility', 'off')
+loglog(n(end-3:end), (n(end-3:end) .^ 3 / n(end)^3 ) * (A_julia(end, 5) / 1.5), '--k', 'LineWidth', 1.2, 'HandleVisibility', 'off')
+text(4000, 3e-2, '$\mathcal{O}(n^2)$', 'Interpreter', 'latex', 'FontSize', 12)
+text(4000, 8e-1, '$\mathcal{O}(n^3)$', 'Interpreter', 'latex', 'FontSize', 12)
+
+exportgraphics(gcf, 'trans_time.pdf')
+%%
+A_time = readmatrix("optimal_time.txt");
+
+figure
+set(gcf, 'Position', [200 200 600 350])
+loglog(n, A_chebfun(:, 4) ./ (A_chebfun(:, 4) + A_chebfun(:, 3)), '-o', 'LineWidth', 1.5)
+hold on
+loglog(n, A_chebfun(:, 5) ./ (A_chebfun(:, 4) + A_chebfun(:, 3)), '-o', 'LineWidth', 1.5)
+loglog(n, A_julia(:, 5) ./ (A_time(:, 5) + A_julia(:, 5)), '-o', 'LineWidth', 1.5)
+loglog(n, A_julia(:, 6) ./ (A_time(:, 5) + A_julia(:, 5)), '-o', 'LineWidth', 1.5)
+loglog(n, A_julia(:, 3) ./ (A_time(:, 4) + A_julia(:, 5)), '-o', 'LineWidth', 1.5)
+
+xlabel('$n$', 'Interpreter', 'latex', 'FontSize', 14)
+set(gca, 'FontName', 'Times New Roman', 'FontSize', 12)
+xlim([n(1) / 1.2, n(end) * 1.2])
+
+exportgraphics(gcf, 'trans_ratio.pdf')
