@@ -365,3 +365,39 @@ function detresolution(X::AbstractMatrix, tol::Number)
 
     yres && xres
 end
+
+function evaluate(X::AbstractMatrix{T}, ygrid::AbstractVector, xgrid::AbstractVector) where {T}
+    # compute the values of X on grids spanned by ygrid and xgird
+
+    result = zeros(T, length(ygrid), length(xgrid))
+    ty = zeros(T, length(ygrid))
+    ty2 = zeros(T, length(ygrid))
+    yj = zeros(T, size(X, 1))
+    for i in eachindex(xgrid)
+        yj .= 0
+        # compression of x-dir
+        tx = 1
+        axpy!(tx, view(X, :, 1), yj)
+        tx2 = xgrid[i]
+        axpy!(tx2, view(X, :, 2), yj)
+        for j in 3:size(X, 2)
+            tx = 2 * xgrid[i] * tx2 - tx
+            axpy!(tx, view(X, :, j), yj)
+            tx2, tx = tx, tx2
+        end
+
+        resulti = view(result, :, i)
+        ty .= 1
+        axpy!(yj[1], ty, resulti)
+        copyto!(ty2, ygrid)
+        axpy!(yj[2], ty2, resulti)
+        Dy = Diagonal(ygrid)
+        for k in 3:size(X, 1)
+            mul!(ty, Dy, ty2, 2, -1)
+            axpy!(yj[k], ty, resulti)
+            ty2, ty = ty, ty2
+        end
+    end
+
+    result
+end

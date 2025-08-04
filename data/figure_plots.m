@@ -438,3 +438,24 @@ set(gca, 'FontName', 'Times New Roman', 'FontSize', 12)
 xlim([n(1) / 1.2, n(end) * 1.2])
 
 exportgraphics(gcf, 'trans_ratio.pdf')
+
+%% accuracy vs speed between FD and US
+figure
+set(gcf,'Position',[300 300 650 350])
+set(gca, 'Position', [0.1 0.17 0.87 0.8])
+FD = readmatrix('FD.txt');
+US = readmatrix('US.txt');
+
+loglog(FD(:, 1), FD(:, 2), '-ok', 'LineWidth', 1.5)
+hold on
+loglog(US(:, 1), US(:, 2), '-*k', 'LineWidth', 1.5)
+
+xlabel('residual', 'FontName','Times New Roman')
+ylabel('time (sec)', 'FontName','Times New Roman')
+
+set(gca, 'xDir', 'reverse')
+set(gca,'FontName','Times New Roman', 'FontSize', 13);
+legend('finite difference', 'ultraspherical', 'Interpreter','latex', 'Location', 'southeast');
+legend('FontName','Times New Roman', 'FontSize', 14);
+
+exportgraphics(gcf, 'FD_US.pdf')

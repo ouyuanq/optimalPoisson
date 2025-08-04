@@ -58,7 +58,7 @@ function bandedlrmul!(C::AbstractMatrix, A1::BandedMatrix, B::AbstractMatrix, A2
     # A1 * B
     if A1.l <= 0
         # uppertriangular
-        @inbounds for k in axes(B, 2)
+        @inbounds for k in axes(C, 2)
             for i in axes(A1, 1)
                 temp = 0
                 for j in rowrange(A1, i)
@@ -69,7 +69,7 @@ function bandedlrmul!(C::AbstractMatrix, A1::BandedMatrix, B::AbstractMatrix, A2
         end
     elseif A1.u <= 0
         # lowertriangular
-        @inbounds for k in axes(B, 2)
+        @inbounds for k in axes(C, 2)
             for i in reverse(axes(A1, 1))
                 temp = 0
                 for j in rowrange(A1, i)
